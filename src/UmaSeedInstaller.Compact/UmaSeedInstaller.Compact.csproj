@@ -7,7 +7,7 @@
     <RootNamespace>UmaSeedInstaller.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\UmaSeedInstaller.App\Assets\app.ico</ApplicationIcon>
-    <Version>0.1.9</Version>
+    <Version>0.1.10</Version>
     <Authors>Songe</Authors>
     <Product>种马搜索器安装更新助手 Compact</Product>
     <Description>使用 Windows 内置 .NET Framework 的轻量种马搜索器安装更新助手。</Description>
@@ -21,6 +21,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Extensions" />
     <Compile Include="..\UmaSeedInstaller.App\MainForm.cs" Link="MainForm.cs" />
-    <EmbeddedResource Include="..\UmaSeedInstaller.App\Assets\icon-128.png" Link="Assets\icon-128.png" />
+    <EmbeddedResource Include="..\UmaSeedInstaller.App\Assets\icon-292.png" Link="Assets\icon-292.png" />
   </ItemGroup>
 </Project>

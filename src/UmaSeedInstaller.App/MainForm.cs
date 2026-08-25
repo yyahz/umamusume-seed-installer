@@ -36,7 +36,7 @@ internal sealed class MainForm : Form
         Text = "种马搜索器安装助手";
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(650, 570);
-        ClientSize = new Size(700, 640);
+        ClientSize = new Size(700, 625);
         Font = new Font("Microsoft YaHei UI", 10F);
         BackColor = Color.FromArgb(246, 249, 247);
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -59,7 +59,7 @@ internal sealed class MainForm : Form
             ColumnCount = 1,
             AutoSize = false
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 121));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 106));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 135));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));
@@ -78,8 +78,8 @@ internal sealed class MainForm : Form
         var panel = new Panel { Dock = DockStyle.Fill };
         var logo = new PictureBox
         {
-            Location = new Point(-20, -20),
-            Size = new Size(160, 160),
+            Location = new Point(0, 0),
+            Size = new Size(106, 106),
             SizeMode = PictureBoxSizeMode.Zoom,
             Image = LoadLogo()
         };
@@ -90,7 +90,7 @@ internal sealed class MainForm : Form
             Font = new Font(Font.FontFamily, 18F, FontStyle.Bold),
             ForeColor = BrandGreen,
             AutoSize = true,
-            Location = new Point(136, 14)
+            Location = new Point(120, 9)
         };
         panel.Controls.Add(title);
         panel.Controls.Add(new Label
@@ -106,7 +106,7 @@ internal sealed class MainForm : Form
             Text = $"安装与更新助手 v{GetInstallerVersion()} · 不读取浏览器资料",
             ForeColor = Color.FromArgb(77, 91, 83),
             AutoSize = true,
-            Location = new Point(138, 61)
+            Location = new Point(122, 54)
         });
         return panel;
     }
@@ -510,7 +510,7 @@ internal sealed class MainForm : Form
     {
         var assembly = Assembly.GetExecutingAssembly();
         var name = assembly.GetManifestResourceNames()
-            .SingleOrDefault(resource => resource.EndsWith("icon-128.png", StringComparison.OrdinalIgnoreCase));
+            .SingleOrDefault(resource => resource.EndsWith("icon-292.png", StringComparison.OrdinalIgnoreCase));
         if (name is null)
         {
             return null;
