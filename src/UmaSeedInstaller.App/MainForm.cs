@@ -35,8 +35,8 @@ internal sealed class MainForm : Form
 
         Text = "种马搜索器安装助手";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(620, 520);
-        ClientSize = new Size(680, 570);
+        MinimumSize = new Size(650, 570);
+        ClientSize = new Size(700, 625);
         Font = new Font("Microsoft YaHei UI", 10F);
         BackColor = Color.FromArgb(246, 249, 247);
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -59,10 +59,10 @@ internal sealed class MainForm : Form
             ColumnCount = 1,
             AutoSize = false
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 90));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 106));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 135));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         Controls.Add(root);
 
@@ -79,25 +79,34 @@ internal sealed class MainForm : Form
         var logo = new PictureBox
         {
             Location = new Point(0, 0),
-            Size = new Size(64, 64),
+            Size = new Size(84, 84),
             SizeMode = PictureBoxSizeMode.Zoom,
             Image = LoadLogo()
         };
         panel.Controls.Add(logo);
-        panel.Controls.Add(new Label
+        var title = new Label
         {
-            Text = "种马搜索器  by Songe",
-            Font = new Font(Font.FontFamily, 17F, FontStyle.Bold),
+            Text = "种马搜索器",
+            Font = new Font(Font.FontFamily, 18F, FontStyle.Bold),
             ForeColor = BrandGreen,
             AutoSize = true,
-            Location = new Point(80, 7)
+            Location = new Point(100, 9)
+        };
+        panel.Controls.Add(title);
+        panel.Controls.Add(new Label
+        {
+            Text = "by Songe",
+            Font = new Font(Font.FontFamily, 10F, FontStyle.Regular),
+            ForeColor = BrandGreen,
+            AutoSize = true,
+            Location = new Point(title.Left + title.PreferredWidth + 10, 20)
         });
         panel.Controls.Add(new Label
         {
             Text = $"安装与更新助手 v{GetInstallerVersion()} · 不读取浏览器资料",
             ForeColor = Color.FromArgb(77, 91, 83),
             AutoSize = true,
-            Location = new Point(82, 44)
+            Location = new Point(102, 54)
         });
         return panel;
     }
@@ -192,16 +201,21 @@ internal sealed class MainForm : Form
         toolboxButton.Size = new Size(145, 40);
         toolboxButton.Enabled = _browsers.Count > 0;
         card.Controls.Add(toolboxButton);
-        card.Controls.Add(new Label
+        var firstInstallTip = new Label
         {
             Text = _browsers.Count > 0
                 ? "首次安装：打开管理页 → 开启开发者模式 → 加载已解压的扩展程序 → 选择上方复制的目录。"
                 : "未检测到 Chrome、Edge 或 360 浏览器；安装扩展后仍可手动打开浏览器的扩展管理页。",
             ForeColor = Color.FromArgb(77, 91, 83),
-            AutoEllipsis = true,
-            Location = new Point(18, 63),
-            Size = new Size(560, 26)
-        });
+            AutoEllipsis = false,
+            AutoSize = false,
+            Dock = DockStyle.Bottom,
+            Height = 68,
+            Padding = new Padding(18, 7, 18, 7),
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+        card.Controls.Add(firstInstallTip);
+        firstInstallTip.SendToBack();
         return card;
     }
 
