@@ -1,14 +1,17 @@
 [CmdletBinding()]
 param(
-    [string]$Version = "0.1.3-alpha.1"
+    [string]$Version = "0.1.4-alpha.1"
 )
 
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $artifactDirectory = Join-Path $projectRoot "artifacts"
-$publishDirectory = Join-Path $projectRoot "build\publish"
-$projectPath = Join-Path $projectRoot "src\UmaSeedInstaller.App\UmaSeedInstaller.App.csproj"
-$testProject = Join-Path $projectRoot "tests\UmaSeedInstaller.Tests\UmaSeedInstaller.Tests.csproj"
+$publishDirectory = Join-Path $projectRoot "build\publish-full"
+$fullProject = Join-Path $projectRoot "src\UmaSeedInstaller.App\UmaSeedInstaller.App.csproj"
+$compactProject = Join-Path $projectRoot "src\UmaSeedInstaller.Compact\UmaSeedInstaller.Compact.csproj"
+$compactProjectDirectory = Split-Path -Parent $compactProject
+$fullTestProject = Join-Path $projectRoot "tests\UmaSeedInstaller.Tests\UmaSeedInstaller.Tests.csproj"
+$compactTestProject = Join-Path $projectRoot "tests\UmaSeedInstaller.Compact.Tests\UmaSeedInstaller.Compact.Tests.csproj"
 
 if (Test-Path -LiteralPath $artifactDirectory) {
     Remove-Item -LiteralPath $artifactDirectory -Recurse -Force
@@ -20,27 +23,46 @@ if (Test-Path -LiteralPath $publishDirectory) {
 
 New-Item -ItemType Directory -Path $artifactDirectory | Out-Null
 
-dotnet run --project $testProject -c Release
+dotnet run --project $fullTestProject -c Release
 if ($LASTEXITCODE -ne 0) {
-    throw "自动测试失败。"
+    throw "Full 版自动测试失败。"
 }
 
-dotnet publish $projectPath -c Release -r win-x64 --self-contained true -o $publishDirectory `
+dotnet run --project $compactTestProject -c Release
+if ($LASTEXITCODE -ne 0) {
+    throw "Compact 版自动测试失败。"
+}
+
+dotnet publish $fullProject -c Release -r win-x64 --self-contained true -o $publishDirectory `
     -p:PublishSingleFile=true `
     -p:DebugType=None `
     -p:DebugSymbols=false
 if ($LASTEXITCODE -ne 0) {
-    throw "发布构建失败。"
+    throw "Full 版发布构建失败。"
 }
 
-$sourceExecutable = Join-Path $publishDirectory "种马搜索器安装助手.exe"
-$assetName = "UmaSeedInstaller-v$Version-win-x64.exe"
-$assetPath = Join-Path $artifactDirectory $assetName
-Copy-Item -LiteralPath $sourceExecutable -Destination $assetPath
+dotnet build $compactProject -c Release
+if ($LASTEXITCODE -ne 0) {
+    throw "Compact 版发布构建失败。"
+}
 
-$hash = (Get-FileHash -LiteralPath $assetPath -Algorithm SHA256).Hash.ToLowerInvariant()
-$hashLine = "$hash  $assetName"
-Set-Content -LiteralPath "$assetPath.sha256.txt" -Value $hashLine -Encoding utf8NoBOM
+$assets = @(
+    @{
+        Source = Join-Path $compactProjectDirectory "bin\Release\net48\种马搜索器安装助手-Compact.exe"
+        Name = "UmaSeedInstaller-v$Version-win-compact.exe"
+    },
+    @{
+        Source = Join-Path $publishDirectory "种马搜索器安装助手.exe"
+        Name = "UmaSeedInstaller-v$Version-win-x64-full.exe"
+    }
+)
 
-Write-Host "构建完成：$assetPath"
-Write-Host "SHA256：$hash"
+foreach ($asset in $assets) {
+    $assetPath = Join-Path $artifactDirectory $asset.Name
+    Copy-Item -LiteralPath ([System.IO.Path]::GetFullPath($asset.Source)) -Destination $assetPath
+    $hash = (Get-FileHash -LiteralPath $assetPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    Set-Content -LiteralPath "$assetPath.sha256.txt" -Value "$hash  $($asset.Name)" -Encoding utf8NoBOM
+    $size = (Get-Item -LiteralPath $assetPath).Length
+    Write-Host "构建完成：$assetPath ($size bytes)"
+    Write-Host "SHA256：$hash"
+}

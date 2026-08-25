@@ -25,13 +25,13 @@ jobs:
         shell: pwsh
         run: |
           $releaseVersion = "${{ github.ref_name }}" -replace '^v', ''
-          if (-not $releaseVersion) { $releaseVersion = "0.1.3-alpha.1" }
+          if (-not $releaseVersion) { $releaseVersion = "0.1.4-alpha.1" }
           .\scripts\build-release.ps1 -Version $releaseVersion
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v7
         with:
-          name: UmaSeedInstaller-win-x64
+          name: UmaSeedInstaller-Windows
           path: artifacts/*
 
       - name: Create prerelease

@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using UmaSeedInstaller.Core;
@@ -89,7 +90,7 @@ static void TestLatestRequestDisablesCaching()
         """;
     using var handler = new CallbackHandler(request =>
     {
-        Assert(request.RequestUri?.Query.Contains("cache_bust=", StringComparison.Ordinal) == true);
+        Assert(request.RequestUri?.Query.IndexOf("cache_bust=", StringComparison.Ordinal) >= 0);
         Assert(request.Headers.CacheControl?.NoCache == true);
         Assert(request.Headers.CacheControl?.NoStore == true);
         Assert(request.Headers.Pragma.Any(value => value.Name == "no-cache"));
@@ -222,7 +223,7 @@ static string Manifest(string version) =>
 
 static void WriteEntry(ZipArchive archive, string name, string content)
 {
-    var entry = archive.CreateEntry(name, CompressionLevel.SmallestSize);
+    var entry = archive.CreateEntry(name, CompressionLevel.Optimal);
     using var stream = entry.Open();
     using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     writer.Write(content);

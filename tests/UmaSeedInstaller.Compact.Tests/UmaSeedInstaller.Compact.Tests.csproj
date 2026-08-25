@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>UmaSeedInstaller.Compact.Tests</AssemblyName>
+    <RootNamespace>UmaSeedInstaller.Compact.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Net.Http" />
+    <Compile Include="..\UmaSeedInstaller.Tests\Program.cs" Link="Program.cs" />
+    <ProjectReference Include="..\..\src\UmaSeedInstaller.Compact\UmaSeedInstaller.Compact.csproj" />
+  </ItemGroup>
+</Project>

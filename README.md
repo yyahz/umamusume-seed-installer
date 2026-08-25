@@ -18,7 +18,14 @@
 
 ## 测试者使用方法
 
-1. 从本仓库的 Releases 下载最新版 `UmaSeedInstaller-v*-win-x64.exe`。
+> 推荐下载文件名包含 `win-compact` 的轻量版。它依赖 Windows 10/11 自带的 .NET Framework 4.8，体积约几百 KB。只有轻量版无法启动时，才下载约70 MB的 `win-x64-full` 完整版。
+
+| 文件 | 推荐场景 | 运行要求 |
+| --- | --- | --- |
+| `UmaSeedInstaller-v*-win-compact.exe` | 默认推荐 | Windows 10 1903及以上或Windows 11 |
+| `UmaSeedInstaller-v*-win-x64-full.exe` | Compact 无法启动时备用 | 64位Windows，自带全部运行库 |
+
+1. 从本仓库的 Releases 下载最新版 `win-compact.exe`。
 2. 双击运行，无需管理员权限。
 3. 点击“安装 / 更新到最新版”。
 4. 点击“复制扩展目录”和“打开扩展管理页”。
@@ -52,7 +59,7 @@ Windows 可能对未签名的测试程序显示 SmartScreen 提示。这是因�
 
 ## 本地构建
 
-需要 Windows 和 .NET 8 SDK 或更高版本：
+需要 Windows、.NET 8 SDK 或更高版本，以及本机的 .NET Framework 4.8 目标包：
 
 ```powershell
 pwsh -File .\scripts\build-release.ps1
@@ -60,24 +67,27 @@ pwsh -File .\scripts\build-release.ps1
 
 输出位于 `artifacts`：
 
-- 单文件、自包含的 Windows x64 可执行程序；
-- 对应的 `.sha256.txt` 校验文件。
+- 基于 .NET Framework 4.8 的单 EXE Compact 版；
+- 自包含的 Windows x64 Full 版；
+- 两个版本各自的 `.sha256.txt` 校验文件。
 
 运行自动测试：
 
 ```powershell
 dotnet run --project .\tests\UmaSeedInstaller.Tests\UmaSeedInstaller.Tests.csproj -c Release
+dotnet run --project .\tests\UmaSeedInstaller.Compact.Tests\UmaSeedInstaller.Compact.Tests.csproj -c Release
 ```
 
 连同公开 GitHub Release 的真实下载、校验和临时安装一起测试：
 
 ```powershell
 dotnet run --project .\tests\UmaSeedInstaller.Tests\UmaSeedInstaller.Tests.csproj -c Release -- --integration
+dotnet run --project .\tests\UmaSeedInstaller.Compact.Tests\UmaSeedInstaller.Compact.Tests.csproj -c Release -- --integration
 ```
 
 ## 发布测试版
 
-推送 `v*` 标签后，GitHub Actions 会在 Windows runner 上执行测试、构建单文件程序并创建预发布版本。工作流不会保存用户数据，也不需要第三方密钥。
+推送 `v*` 标签后，GitHub Actions 会在 Windows runner 上分别测试并构建 Compact 与 Full 两种程序，然后创建预发布版本。工作流不会保存用户数据，也不需要第三方密钥。
 
 ## 许可证
 
