@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>种马搜索器安装助手</AssemblyName>
+    <RootNamespace>UmaSeedInstaller.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <Version>0.1.0</Version>
+    <Authors>Songe</Authors>
+    <Product>种马搜索器安装更新助手</Product>
+    <Description>从项目官方 GitHub Release 安全安装和更新种马搜索器浏览器扩展。</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UmaSeedInstaller.Core\UmaSeedInstaller.Core.csproj" />
+    <EmbeddedResource Include="Assets\icon-128.png" />
+  </ItemGroup>
+</Project>

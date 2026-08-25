@@ -1,0 +1,14 @@
+bin/
+obj/
+artifacts/
+build/
+.vs/
+.idea/
+*.user
+*.suo
+*.pdb
+*.zip
+*.exe
+*.dll
+*.runtimeconfig.json
+*.deps.json
