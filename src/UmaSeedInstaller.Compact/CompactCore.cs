@@ -158,7 +158,7 @@ public sealed class GitHubReleaseClient
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.8"));
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.9"));
         }
     }
 

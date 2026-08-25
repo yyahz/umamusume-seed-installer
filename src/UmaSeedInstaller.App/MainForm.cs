@@ -78,8 +78,8 @@ internal sealed class MainForm : Form
         var panel = new Panel { Dock = DockStyle.Fill };
         var logo = new PictureBox
         {
-            Location = new Point(0, 0),
-            Size = new Size(120, 120),
+            Location = new Point(-20, -20),
+            Size = new Size(160, 160),
             SizeMode = PictureBoxSizeMode.Zoom,
             Image = LoadLogo()
         };
