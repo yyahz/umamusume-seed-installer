@@ -19,7 +19,7 @@ public sealed partial class GitHubReleaseClient
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
             _httpClient.DefaultRequestHeaders.UserAgent.Add(
-                new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.0"));
+                new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.1"));
         }
     }
 
@@ -205,4 +205,3 @@ public sealed partial class GitHubReleaseClient
     [GeneratedRegex(@"^umamusume-seed-optimizer-v(\d+(?:\.\d+){1,3})\.zip$", RegexOptions.CultureInvariant)]
     private static partial Regex ReleaseAssetNameRegex();
 }
-

@@ -261,12 +261,28 @@ internal sealed class MainForm : Form
                 () => _installer.Install(packagePath, _latestRelease.Version),
                 _operationCancellation.Token);
             _installedValue.Text = $"v{result.InstalledVersion}";
+            var browser = SelectedBrowser();
+            var is360SafeBrowser = string.Equals(browser?.Id, "360se", StringComparison.OrdinalIgnoreCase);
             _statusLabel.Text = result.WasUpgrade
-                ? "更新完成。请在浏览器扩展管理页点击“重新加载”。"
+                ? is360SafeBrowser
+                    ? "文件更新完成；请在已打开的360扩展管理页重新加载，或停用后再启用。"
+                    : "更新完成。请在浏览器扩展管理页点击“重新加载”。"
                 : "安装完成。请按下方步骤首次加载扩展。";
             Clipboard.SetText(result.ExtensionDirectory);
+            if (browser is not null)
+            {
+                BrowserDetector.Open(browser, browser.ManagementUrl);
+            }
+
+            var browserGuidance = is360SafeBrowser
+                ? $"\n\n360 安全浏览器的扩展管理页已经打开：\n"
+                  + "1. 找到“种马搜索器”，点击“重新加载”；如果没有该按钮，先停用再启用。\n"
+                  + "2. 如果360原来加载的是旧文件夹，请删除旧项，再用“加载已解压的扩展程序”选择下面的固定目录。此迁移只需一次。"
+                : "\n\n浏览器扩展管理页已经打开，请点击扩展卡片上的“重新加载”。";
             MessageBox.Show(
-                $"已{(result.WasUpgrade ? "更新" : "安装")}到 v{result.InstalledVersion}。\n\n扩展目录已复制到剪贴板：\n{result.ExtensionDirectory}",
+                $"已{(result.WasUpgrade ? "更新" : "安装")}到 v{result.InstalledVersion}。"
+                + browserGuidance
+                + $"\n\n固定扩展目录已复制到剪贴板：\n{result.ExtensionDirectory}",
                 "操作完成",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
