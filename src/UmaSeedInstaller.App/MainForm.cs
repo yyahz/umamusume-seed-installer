@@ -193,7 +193,7 @@ internal sealed class MainForm : Form
         }
 
         card.Controls.Add(_browserBox);
-        var manageButton = CreateSecondaryButton("打开扩展管理页", new Point(250, 13), (_, _) => OpenManagementPage());
+        var manageButton = CreateSecondaryButton("复制管理页地址", new Point(250, 13), (_, _) => CopyManagementPageAddress());
         manageButton.Size = new Size(170, 40);
         manageButton.Enabled = _browsers.Count > 0;
         card.Controls.Add(manageButton);
@@ -204,7 +204,7 @@ internal sealed class MainForm : Form
         var firstInstallTip = new Label
         {
             Text = _browsers.Count > 0
-                ? "首次安装：打开管理页 → 开启开发者模式 → 加载已解压的扩展程序 → 选择上方复制的目录。"
+                ? "首次安装：复制管理页地址并在浏览器地址栏打开 → 开启开发者模式 → 返回助手复制扩展目录 → 加载已解压的扩展程序。"
                 : "未检测到 Chrome、Edge 或 360 浏览器；安装扩展后仍可手动打开浏览器的扩展管理页。",
             ForeColor = Color.FromArgb(77, 91, 83),
             AutoEllipsis = false,
@@ -301,20 +301,21 @@ internal sealed class MainForm : Form
             var is360SafeBrowser = string.Equals(browser?.Id, "360se", StringComparison.OrdinalIgnoreCase);
             _statusLabel.Text = result.WasUpgrade
                 ? is360SafeBrowser
-                    ? "文件更新完成；请在已打开的360扩展管理页重新加载，或停用后再启用。"
-                    : "更新完成。请在浏览器扩展管理页点击“重新加载”。"
+                    ? "文件更新完成；请复制管理页地址并在360中打开，然后重新加载或停用后再启用。"
+                    : "更新完成；请复制管理页地址并在浏览器中打开，然后点击“重新加载”。"
                 : "安装完成。请按下方步骤首次加载扩展。";
             Clipboard.SetText(result.ExtensionDirectory);
-            if (browser is not null)
-            {
-                BrowserDetector.Open(browser, browser.ManagementUrl);
-            }
 
-            var browserGuidance = is360SafeBrowser
-                ? $"\n\n360 安全浏览器的扩展管理页已经打开：\n"
-                  + "1. 找到“种马搜索器”，点击“重新加载”；如果没有该按钮，先停用再启用。\n"
-                  + "2. 如果360原来加载的是旧文件夹，请删除旧项，再用“加载已解压的扩展程序”选择下面的固定目录。此迁移只需一次。"
-                : "\n\n浏览器扩展管理页已经打开，请点击扩展卡片上的“重新加载”。";
+            var browserGuidance = result.WasUpgrade
+                ? is360SafeBrowser
+                    ? $"\n\n请点击“复制管理页地址”，在360地址栏粘贴并回车：\n"
+                      + "1. 找到“种马搜索器”，点击“重新加载”；如果没有该按钮，先停用再启用。\n"
+                      + "2. 如果360原来加载的是旧文件夹，请删除旧项，再用“加载已解压的扩展程序”选择下面的固定目录。此迁移只需一次。"
+                    : "\n\n请点击“复制管理页地址”，在所选浏览器地址栏粘贴并回车，再点击扩展卡片上的“重新加载”。"
+                : "\n\n首次安装步骤：\n"
+                  + "1. 点击“复制管理页地址”，在所选浏览器地址栏粘贴并回车。\n"
+                  + "2. 开启开发者模式并点击“加载已解压的扩展程序”。\n"
+                  + "3. 返回助手点击“复制扩展目录”，再选择该目录。";
             MessageBox.Show(
                 $"已{(result.WasUpgrade ? "更新" : "安装")}到 v{result.InstalledVersion}。"
                 + browserGuidance
@@ -380,18 +381,12 @@ internal sealed class MainForm : Form
         }
 
         Clipboard.SetText(_layout.ExtensionDirectory);
-        var browser = SelectedBrowser();
-        if (browser is not null)
-        {
-            BrowserDetector.Open(browser, browser.ManagementUrl);
-        }
-
         _statusLabel.Text = "旧目录迁移完成；请在浏览器中重新加载一次新的固定扩展目录。";
         MessageBox.Show(
             "旧目录已经迁移完成，扩展和备份均已保留。\n\n"
             + "新扩展目录已复制到剪贴板：\n"
             + $"{_layout.ExtensionDirectory}\n\n"
-            + "请在扩展管理页删除指向旧路径的扩展项，再通过“加载已解压的扩展程序”选择新目录。此操作只需一次。",
+            + "请点击“复制管理页地址”并在浏览器地址栏粘贴打开，删除指向旧路径的扩展项；再返回助手复制扩展目录，通过“加载已解压的扩展程序”选择新目录。此操作只需一次。",
             "目录迁移完成",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
@@ -408,12 +403,13 @@ internal sealed class MainForm : Form
         });
     }
 
-    private void OpenManagementPage()
+    private void CopyManagementPageAddress()
     {
         var browser = SelectedBrowser();
         if (browser is not null)
         {
-            BrowserDetector.Open(browser, browser.ManagementUrl);
+            Clipboard.SetText(browser.ManagementUrl);
+            _statusLabel.Text = $"{browser.DisplayName} 的管理页地址已复制；粘贴打开后，可返回助手复制扩展目录。";
         }
     }
 

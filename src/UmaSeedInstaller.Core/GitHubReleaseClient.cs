@@ -19,7 +19,7 @@ public sealed partial class GitHubReleaseClient
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
             _httpClient.DefaultRequestHeaders.UserAgent.Add(
-                new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.10"));
+                new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.11"));
         }
     }
 
