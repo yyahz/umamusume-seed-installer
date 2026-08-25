@@ -36,7 +36,7 @@ internal sealed class MainForm : Form
         Text = "种马搜索器安装助手";
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(650, 570);
-        ClientSize = new Size(700, 700);
+        ClientSize = new Size(700, 640);
         Font = new Font("Microsoft YaHei UI", 10F);
         BackColor = Color.FromArgb(246, 249, 247);
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -59,7 +59,7 @@ internal sealed class MainForm : Form
             ColumnCount = 1,
             AutoSize = false
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 181));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 121));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 135));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));
@@ -79,7 +79,7 @@ internal sealed class MainForm : Form
         var logo = new PictureBox
         {
             Location = new Point(0, 0),
-            Size = new Size(160, 160),
+            Size = new Size(120, 120),
             SizeMode = PictureBoxSizeMode.Zoom,
             Image = LoadLogo()
         };
@@ -90,7 +90,7 @@ internal sealed class MainForm : Form
             Font = new Font(Font.FontFamily, 18F, FontStyle.Bold),
             ForeColor = BrandGreen,
             AutoSize = true,
-            Location = new Point(176, 36)
+            Location = new Point(136, 14)
         };
         panel.Controls.Add(title);
         panel.Controls.Add(new Label
@@ -106,7 +106,7 @@ internal sealed class MainForm : Form
             Text = $"安装与更新助手 v{GetInstallerVersion()} · 不读取浏览器资料",
             ForeColor = Color.FromArgb(77, 91, 83),
             AutoSize = true,
-            Location = new Point(178, 83)
+            Location = new Point(138, 61)
         });
         return panel;
     }
