@@ -25,7 +25,7 @@ jobs:
         shell: pwsh
         run: |
           $releaseVersion = "${{ github.ref_name }}" -replace '^v', ''
-          if (-not $releaseVersion) { $releaseVersion = "0.1.11-alpha.1" }
+          if (-not $releaseVersion) { $releaseVersion = "0.1.12-alpha.1" }
           .\scripts\build-release.ps1 -Version $releaseVersion
 
       - name: Upload workflow artifact

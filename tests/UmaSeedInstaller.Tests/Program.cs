@@ -8,6 +8,7 @@ var tests = new (string Name, Action Run)[]
 {
     ("版本标签解析", TestVersionParsing),
     ("SHA256 摘要解析", TestDigestParsing),
+    ("360 安全浏览器管理页地址", TestSafe360ManagementUrl),
     ("GitHub 最新版请求禁用缓存", TestLatestRequestDisablesCaching),
     ("合法扩展包检查与安装", TestValidPackageAndInstall),
     ("更新保留备份", TestUpgradeKeepsBackup),
@@ -70,6 +71,11 @@ static void TestDigestParsing()
     Assert(GitHubReleaseClient.TryNormalizeSha256($"sha256:{digest}", out var normalized));
     AssertEqual(digest.ToLowerInvariant(), normalized);
     Assert(!GitHubReleaseClient.TryNormalizeSha256("sha256:1234", out _));
+}
+
+static void TestSafe360ManagementUrl()
+{
+    AssertEqual("se://extensions-frame", BrowserDetector.Safe360ManagementUrl);
 }
 
 static void TestLatestRequestDisablesCaching()

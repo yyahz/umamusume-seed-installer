@@ -5,6 +5,7 @@ namespace UmaSeedInstaller.Core;
 public static class BrowserDetector
 {
     public const string ToolboxUrl = "https://game.bilibili.com/tool/pd";
+    public const string Safe360ManagementUrl = "se://extensions-frame";
 
     public static IReadOnlyList<BrowserInfo> DetectInstalled()
     {
@@ -19,7 +20,7 @@ public static class BrowserDetector
             new BrowserInfo("chrome", "Google Chrome", Path.Combine(programFilesX86, "Google", "Chrome", "Application", "chrome.exe"), "chrome://extensions/", "chrome"),
             new BrowserInfo("edge", "Microsoft Edge", Path.Combine(programFilesX86, "Microsoft", "Edge", "Application", "msedge.exe"), "edge://extensions/", "msedge"),
             new BrowserInfo("edge", "Microsoft Edge", Path.Combine(programFiles, "Microsoft", "Edge", "Application", "msedge.exe"), "edge://extensions/", "msedge"),
-            new BrowserInfo("360se", "360 安全浏览器", Path.Combine(roaming, "360se6", "Application", "360se.exe"), "chrome://myextensions/extensions", "360se"),
+            new BrowserInfo("360se", "360 安全浏览器", Path.Combine(roaming, "360se6", "Application", "360se.exe"), Safe360ManagementUrl, "360se"),
             new BrowserInfo("360x", "360 极速浏览器 X", Path.Combine(local, "360ChromeX", "Chrome", "Application", "360ChromeX.exe"), "chrome://extensions/", "360ChromeX"),
             new BrowserInfo("360", "360 极速浏览器", Path.Combine(local, "360Chrome", "Chrome", "Application", "360chrome.exe"), "chrome://extensions/", "360chrome")
         };
