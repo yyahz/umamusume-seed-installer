@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$Version = "0.1.5-alpha.1"
+    [string]$Version = "0.1.6-alpha.1"
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,15 +13,11 @@ $compactProjectDirectory = Split-Path -Parent $compactProject
 $fullTestProject = Join-Path $projectRoot "tests\UmaSeedInstaller.Tests\UmaSeedInstaller.Tests.csproj"
 $compactTestProject = Join-Path $projectRoot "tests\UmaSeedInstaller.Compact.Tests\UmaSeedInstaller.Compact.Tests.csproj"
 
-if (Test-Path -LiteralPath $artifactDirectory) {
-    Remove-Item -LiteralPath $artifactDirectory -Recurse -Force
-}
-
 if (Test-Path -LiteralPath $publishDirectory) {
     Remove-Item -LiteralPath $publishDirectory -Recurse -Force
 }
 
-New-Item -ItemType Directory -Path $artifactDirectory | Out-Null
+New-Item -ItemType Directory -Path $artifactDirectory -Force | Out-Null
 
 dotnet run --project $fullTestProject -c Release
 if ($LASTEXITCODE -ne 0) {
@@ -59,6 +55,7 @@ $assets = @(
 
 foreach ($asset in $assets) {
     $assetPath = Join-Path $artifactDirectory $asset.Name
+    Remove-Item -LiteralPath $assetPath, "$assetPath.sha256.txt" -Force -ErrorAction SilentlyContinue
     Copy-Item -LiteralPath ([System.IO.Path]::GetFullPath($asset.Source)) -Destination $assetPath
     $hash = (Get-FileHash -LiteralPath $assetPath -Algorithm SHA256).Hash.ToLowerInvariant()
     Set-Content -LiteralPath "$assetPath.sha256.txt" -Value "$hash  $($asset.Name)" -Encoding utf8NoBOM

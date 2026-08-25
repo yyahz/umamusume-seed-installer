@@ -36,7 +36,7 @@ internal sealed class MainForm : Form
         Text = "种马搜索器安装助手";
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(650, 570);
-        ClientSize = new Size(700, 625);
+        ClientSize = new Size(700, 640);
         Font = new Font("Microsoft YaHei UI", 10F);
         BackColor = Color.FromArgb(246, 249, 247);
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -59,7 +59,7 @@ internal sealed class MainForm : Form
             ColumnCount = 1,
             AutoSize = false
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 106));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 121));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 135));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));
@@ -79,7 +79,7 @@ internal sealed class MainForm : Form
         var logo = new PictureBox
         {
             Location = new Point(0, 0),
-            Size = new Size(84, 84),
+            Size = new Size(100, 100),
             SizeMode = PictureBoxSizeMode.Zoom,
             Image = LoadLogo()
         };
@@ -90,23 +90,23 @@ internal sealed class MainForm : Form
             Font = new Font(Font.FontFamily, 18F, FontStyle.Bold),
             ForeColor = BrandGreen,
             AutoSize = true,
-            Location = new Point(100, 9)
+            Location = new Point(116, 14)
         };
         panel.Controls.Add(title);
         panel.Controls.Add(new Label
         {
             Text = "by Songe",
-            Font = new Font(Font.FontFamily, 10F, FontStyle.Regular),
+            Font = new Font(Font.FontFamily, 8F, FontStyle.Regular),
             ForeColor = BrandGreen,
             AutoSize = true,
-            Location = new Point(title.Left + title.PreferredWidth + 10, 20)
+            Location = new Point(title.Left + title.PreferredWidth + 8, 28)
         });
         panel.Controls.Add(new Label
         {
             Text = $"安装与更新助手 v{GetInstallerVersion()} · 不读取浏览器资料",
             ForeColor = Color.FromArgb(77, 91, 83),
             AutoSize = true,
-            Location = new Point(102, 54)
+            Location = new Point(118, 61)
         });
         return panel;
     }
