@@ -7,7 +7,7 @@ namespace UmaSeedInstaller.App;
 internal sealed class MainForm : Form
 {
     private static readonly Color BrandGreen = Color.FromArgb(16, 126, 75);
-    private readonly InstallLayout _layout = InstallLayout.CreateDefault();
+    private readonly InstallLayout _layout;
     private readonly ExtensionInstaller _installer;
     private readonly GitHubReleaseClient _releaseClient;
     private readonly IReadOnlyList<BrowserInfo> _browsers;
@@ -19,9 +19,11 @@ internal sealed class MainForm : Form
     private readonly ComboBox _browserBox = new();
     private ExtensionRelease? _latestRelease;
     private CancellationTokenSource? _operationCancellation;
+    private readonly bool _migratedLegacyDirectory;
 
     public MainForm()
     {
+        (_layout, _migratedLegacyDirectory) = SelectInstallLayout();
         _installer = new ExtensionInstaller(_layout);
         _releaseClient = new GitHubReleaseClient(new HttpClient
         {
@@ -37,7 +39,11 @@ internal sealed class MainForm : Form
         BackColor = Color.FromArgb(246, 249, 247);
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         BuildInterface();
-        Shown += async (_, _) => await RefreshReleaseAsync();
+        Shown += async (_, _) =>
+        {
+            await RefreshReleaseAsync();
+            CompleteLegacyMigrationGuidance();
+        };
         FormClosing += (_, _) => _operationCancellation?.Cancel();
     }
 
@@ -310,6 +316,57 @@ internal sealed class MainForm : Form
         _statusLabel.Text = "扩展目录已复制到剪贴板。";
     }
 
+    private static (InstallLayout Layout, bool Migrated) SelectInstallLayout()
+    {
+        var current = InstallLayout.CreateDefault();
+        var legacy = InstallLayout.CreateLegacy();
+        if (!Directory.Exists(legacy.BaseDirectory) || Directory.Exists(current.BaseDirectory))
+        {
+            return (current, false);
+        }
+
+        var answer = MessageBox.Show(
+            "检测到旧安装目录中包含作者名：\n"
+            + $"{legacy.BaseDirectory}\n\n"
+            + "是否迁移到不含作者名的新目录？扩展文件和备份都会保留。迁移后需要在浏览器中重新加载一次新目录。",
+            "迁移安装目录",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
+        if (answer != DialogResult.Yes)
+        {
+            return (legacy, false);
+        }
+
+        current.MigrateFrom(legacy);
+        TryRemoveEmptyDirectory(Path.GetDirectoryName(legacy.BaseDirectory));
+        return (current, true);
+    }
+
+    private void CompleteLegacyMigrationGuidance()
+    {
+        if (!_migratedLegacyDirectory)
+        {
+            return;
+        }
+
+        Clipboard.SetText(_layout.ExtensionDirectory);
+        var browser = SelectedBrowser();
+        if (browser is not null)
+        {
+            BrowserDetector.Open(browser, browser.ManagementUrl);
+        }
+
+        _statusLabel.Text = "旧目录迁移完成；请在浏览器中重新加载一次新的固定扩展目录。";
+        MessageBox.Show(
+            "旧目录已经迁移完成，扩展和备份均已保留。\n\n"
+            + "新扩展目录已复制到剪贴板：\n"
+            + $"{_layout.ExtensionDirectory}\n\n"
+            + "请在扩展管理页删除指向旧路径的扩展项，再通过“加载已解压的扩展程序”选择新目录。此操作只需一次。",
+            "目录迁移完成",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
+    }
+
     private void OpenInstallFolder()
     {
         Directory.CreateDirectory(_layout.ExtensionDirectory);
@@ -433,6 +490,28 @@ internal sealed class MainForm : Form
             if (File.Exists(path))
             {
                 File.Delete(path);
+            }
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private static void TryRemoveEmptyDirectory(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+        {
+            return;
+        }
+
+        try
+        {
+            if (!Directory.EnumerateFileSystemEntries(path).Any())
+            {
+                Directory.Delete(path, recursive: false);
             }
         }
         catch (IOException)

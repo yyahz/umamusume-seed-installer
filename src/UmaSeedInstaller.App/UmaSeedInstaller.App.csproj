@@ -14,7 +14,7 @@
     <DebugSymbols>false</DebugSymbols>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <Authors>Songe</Authors>
     <Product>种马搜索器安装更新助手</Product>
     <Description>从项目官方 GitHub Release 安全安装和更新种马搜索器浏览器扩展。</Description>

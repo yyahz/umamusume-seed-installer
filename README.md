@@ -31,9 +31,11 @@ Windows 可能对未签名的测试程序显示 SmartScreen 提示。这是因�
 
 | 内容 | 位置 |
 | --- | --- |
-| 当前扩展 | `%LOCALAPPDATA%\Songe\UmaSeedSearcher\Extension` |
-| 旧版本备份 | `%LOCALAPPDATA%\Songe\UmaSeedSearcher\Backups` |
-| 临时工作文件 | `%LOCALAPPDATA%\Songe\UmaSeedSearcher\Work` |
+| 当前扩展 | `%LOCALAPPDATA%\UmaSeedSearcher\Extension` |
+| 旧版本备份 | `%LOCALAPPDATA%\UmaSeedSearcher\Backups` |
+| 临时工作文件 | `%LOCALAPPDATA%\UmaSeedSearcher\Work` |
+
+早期测试版使用过包含作者名的旧目录。新版检测到旧目录时会先征求用户同意，再将整个目录迁移到上述位置；不会覆盖已经存在的新目录。
 
 助手不修改注册表，不写入浏览器安装目录，不关闭浏览器，也不访问浏览器用户资料目录。
 

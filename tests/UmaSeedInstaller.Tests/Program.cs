@@ -9,6 +9,7 @@ var tests = new (string Name, Action Run)[]
     ("SHA256 摘要解析", TestDigestParsing),
     ("合法扩展包检查与安装", TestValidPackageAndInstall),
     ("更新保留备份", TestUpgradeKeepsBackup),
+    ("旧安装目录完整迁移", TestLegacyDirectoryMigration),
     ("拒绝 ZIP 路径穿越", TestZipTraversalRejected),
     ("无效包不破坏已有安装", TestInvalidPackagePreservesInstall)
 };
@@ -100,6 +101,25 @@ static void TestUpgradeKeepsBackup()
         Assert(result.BackupDirectory is not null);
         AssertEqual("old", File.ReadAllText(Path.Combine(result.BackupDirectory!, "main.js")));
         AssertEqual("new", File.ReadAllText(Path.Combine(layout.ExtensionDirectory, "main.js")));
+    });
+}
+
+static void TestLegacyDirectoryMigration()
+{
+    WithTemporaryDirectory(root =>
+    {
+        var legacy = new InstallLayout(Path.Combine(root, "Publisher", "UmaSeedSearcher"));
+        var current = new InstallLayout(Path.Combine(root, "UmaSeedSearcher"));
+        Directory.CreateDirectory(legacy.ExtensionDirectory);
+        Directory.CreateDirectory(legacy.BackupDirectory);
+        File.WriteAllText(Path.Combine(legacy.ExtensionDirectory, "manifest.json"), Manifest("1.0.0"));
+        File.WriteAllText(Path.Combine(legacy.BackupDirectory, "marker.txt"), "backup");
+
+        Assert(current.MigrateFrom(legacy));
+        Assert(!Directory.Exists(legacy.BaseDirectory));
+        Assert(File.Exists(Path.Combine(current.ExtensionDirectory, "manifest.json")));
+        AssertEqual("backup", File.ReadAllText(Path.Combine(current.BackupDirectory, "marker.txt")));
+        Assert(!current.MigrateFrom(legacy));
     });
 }
 
