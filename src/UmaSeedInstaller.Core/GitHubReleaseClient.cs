@@ -19,13 +19,27 @@ public sealed partial class GitHubReleaseClient
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
             _httpClient.DefaultRequestHeaders.UserAgent.Add(
-                new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.2"));
+                new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.3"));
         }
     }
 
     public async Task<ExtensionRelease> GetLatestAsync(CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync(LatestReleaseApi, cancellationToken)
+        var requestUri = new UriBuilder(LatestReleaseApi)
+        {
+            Query = $"cache_bust={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"
+        }.Uri;
+        using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+        request.Headers.CacheControl = new CacheControlHeaderValue
+        {
+            NoCache = true,
+            NoStore = true,
+            MaxAge = TimeSpan.Zero
+        };
+        request.Headers.Pragma.ParseAdd("no-cache");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+        request.Headers.TryAddWithoutValidation("X-GitHub-Api-Version", "2022-11-28");
+        using var response = await _httpClient.SendAsync(request, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 

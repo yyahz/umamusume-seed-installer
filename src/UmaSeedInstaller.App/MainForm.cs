@@ -16,6 +16,7 @@ internal sealed class MainForm : Form
     private readonly Label _statusLabel = new();
     private readonly ProgressBar _progress = new();
     private readonly Button _installButton = new();
+    private readonly Button _refreshButton = new();
     private readonly ComboBox _browserBox = new();
     private ExtensionRelease? _latestRelease;
     private CancellationTokenSource? _operationCancellation;
@@ -92,7 +93,7 @@ internal sealed class MainForm : Form
         });
         panel.Controls.Add(new Label
         {
-            Text = "安装与更新助手 · 不读取浏览器资料",
+            Text = $"安装与更新助手 v{GetInstallerVersion()} · 不读取浏览器资料",
             ForeColor = Color.FromArgb(77, 91, 83),
             AutoSize = true,
             Location = new Point(82, 44)
@@ -107,16 +108,27 @@ internal sealed class MainForm : Form
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(18, 14, 18, 12),
-            ColumnCount = 2,
+            ColumnCount = 3,
             RowCount = 2
         };
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130));
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
         grid.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
         grid.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
         card.Controls.Add(grid);
         AddVersionRow(grid, 0, "本机版本", _installedValue, FormatVersion(_installer.GetInstalledVersion()));
         AddVersionRow(grid, 1, "GitHub 最新版", _latestValue, "正在检查…");
+        _refreshButton.Text = "强制刷新";
+        _refreshButton.Dock = DockStyle.Fill;
+        _refreshButton.Margin = new Padding(8, 8, 0, 8);
+        _refreshButton.FlatStyle = FlatStyle.Flat;
+        _refreshButton.BackColor = Color.White;
+        _refreshButton.ForeColor = BrandGreen;
+        _refreshButton.FlatAppearance.BorderColor = Color.FromArgb(174, 207, 187);
+        _refreshButton.Click += async (_, _) => await RefreshReleaseAsync();
+        grid.Controls.Add(_refreshButton, 2, 0);
+        grid.SetRowSpan(_refreshButton, 2);
         return card;
     }
 
@@ -209,10 +221,13 @@ internal sealed class MainForm : Form
     {
         try
         {
+            _latestRelease = null;
+            _installedValue.Text = FormatVersion(_installer.GetInstalledVersion());
+            _latestValue.Text = "正在检查…";
             SetBusy(true, "正在从 GitHub 检查最新版本…");
             _latestRelease = await _releaseClient.GetLatestAsync();
             _latestValue.Text = $"v{_latestRelease.Version}";
-            _statusLabel.Text = "已就绪；安装时会再次校验下载文件。";
+            _statusLabel.Text = $"{DateTime.Now:HH:mm:ss} 已强制刷新；安装时会再次校验下载文件。";
             _installButton.Enabled = true;
         }
         catch (Exception exception)
@@ -405,6 +420,7 @@ internal sealed class MainForm : Form
     {
         UseWaitCursor = busy;
         _installButton.Enabled = !busy && _latestRelease is not null;
+        _refreshButton.Enabled = !busy;
         if (status is not null)
         {
             _statusLabel.Text = status;
@@ -468,6 +484,12 @@ internal sealed class MainForm : Form
     }
 
     private static string FormatVersion(Version? version) => version is null ? "尚未安装" : $"v{version}";
+
+    private static string GetInstallerVersion()
+    {
+        var version = typeof(MainForm).Assembly.GetName().Version;
+        return version is null ? "未知" : version.ToString(3);
+    }
 
     private static Image? LoadLogo()
     {

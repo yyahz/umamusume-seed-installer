@@ -7,6 +7,7 @@ var tests = new (string Name, Action Run)[]
 {
     ("版本标签解析", TestVersionParsing),
     ("SHA256 摘要解析", TestDigestParsing),
+    ("GitHub 最新版请求禁用缓存", TestLatestRequestDisablesCaching),
     ("合法扩展包检查与安装", TestValidPackageAndInstall),
     ("更新保留备份", TestUpgradeKeepsBackup),
     ("旧安装目录完整迁移", TestLegacyDirectoryMigration),
@@ -68,6 +69,38 @@ static void TestDigestParsing()
     Assert(GitHubReleaseClient.TryNormalizeSha256($"sha256:{digest}", out var normalized));
     AssertEqual(digest.ToLowerInvariant(), normalized);
     Assert(!GitHubReleaseClient.TryNormalizeSha256("sha256:1234", out _));
+}
+
+static void TestLatestRequestDisablesCaching()
+{
+    const string responseJson = """
+        {
+          "tag_name": "v1.2.3",
+          "html_url": "https://github.com/yyahz/umamusume-seed-optimizer/releases/tag/v1.2.3",
+          "assets": [
+            {
+              "name": "umamusume-seed-optimizer-v1.2.3.zip",
+              "browser_download_url": "https://github.com/yyahz/umamusume-seed-optimizer/releases/download/v1.2.3/umamusume-seed-optimizer-v1.2.3.zip",
+              "size": 1,
+              "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          ]
+        }
+        """;
+    using var handler = new CallbackHandler(request =>
+    {
+        Assert(request.RequestUri?.Query.Contains("cache_bust=", StringComparison.Ordinal) == true);
+        Assert(request.Headers.CacheControl?.NoCache == true);
+        Assert(request.Headers.CacheControl?.NoStore == true);
+        Assert(request.Headers.Pragma.Any(value => value.Name == "no-cache"));
+        return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseJson)
+        };
+    });
+    using var http = new HttpClient(handler);
+    var release = new GitHubReleaseClient(http).GetLatestAsync().GetAwaiter().GetResult();
+    AssertEqual(new Version(1, 2, 3), release.Version);
 }
 
 static void TestValidPackageAndInstall()
@@ -251,4 +284,11 @@ static void AssertThrows<TException>(Action action) where TException : Exception
     }
 
     throw new InvalidOperationException($"断言失败：预期抛出 {typeof(TException).Name}。");
+}
+
+sealed class CallbackHandler(Func<HttpRequestMessage, HttpResponseMessage> callback) : HttpMessageHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken) => Task.FromResult(callback(request));
 }
