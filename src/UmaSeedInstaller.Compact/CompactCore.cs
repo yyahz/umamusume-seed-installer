@@ -158,7 +158,7 @@ public sealed class GitHubReleaseClient
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.12"));
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.13"));
         }
     }
 
@@ -560,7 +560,7 @@ public sealed class ExtensionInstaller
 public static class BrowserDetector
 {
     public const string ToolboxUrl = "https://game.bilibili.com/tool/pd";
-    public const string Safe360ManagementUrl = "se://extensions-frame";
+    public const string Safe360ManagementUrl = "chrome://extensions/";
 
     public static IReadOnlyList<BrowserInfo> DetectInstalled()
     {

@@ -409,7 +409,9 @@ internal sealed class MainForm : Form
         if (browser is not null)
         {
             Clipboard.SetText(browser.ManagementUrl);
-            _statusLabel.Text = $"{browser.DisplayName} 的管理页地址已复制；粘贴打开后，可返回助手复制扩展目录。";
+            _statusLabel.Text = string.Equals(browser.Id, "360se", StringComparison.OrdinalIgnoreCase)
+                ? "360 管理页地址已复制；若仍无法打开，请点击右上角扩展按钮 → 扩展管理器。"
+                : $"{browser.DisplayName} 的管理页地址已复制；粘贴打开后，可返回助手复制扩展目录。";
         }
     }
 

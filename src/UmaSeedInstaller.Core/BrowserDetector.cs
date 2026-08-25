@@ -5,7 +5,7 @@ namespace UmaSeedInstaller.Core;
 public static class BrowserDetector
 {
     public const string ToolboxUrl = "https://game.bilibili.com/tool/pd";
-    public const string Safe360ManagementUrl = "se://extensions-frame";
+    public const string Safe360ManagementUrl = "chrome://extensions/";
 
     public static IReadOnlyList<BrowserInfo> DetectInstalled()
     {

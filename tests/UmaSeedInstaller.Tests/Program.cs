@@ -75,7 +75,7 @@ static void TestDigestParsing()
 
 static void TestSafe360ManagementUrl()
 {
-    AssertEqual("se://extensions-frame", BrowserDetector.Safe360ManagementUrl);
+    AssertEqual("chrome://extensions/", BrowserDetector.Safe360ManagementUrl);
 }
 
 static void TestLatestRequestDisablesCaching()
