@@ -30,7 +30,7 @@ public static class ExtensionPackage
         using var document = JsonDocument.Parse(stream);
         var root = document.RootElement;
         var manifestVersion = root.GetProperty("manifest_version").GetInt32();
-        var name = root.GetProperty("name").GetString() ?? string.Empty;
+        var name = ResolveManifestName(archive, root);
         var versionText = root.GetProperty("version").GetString() ?? string.Empty;
         if (manifestVersion != 3)
         {
@@ -49,6 +49,47 @@ public static class ExtensionPackage
         }
 
         return new ExtensionManifest(manifestVersion, name, version);
+    }
+
+    private static string ResolveManifestName(ZipArchive archive, JsonElement manifest)
+    {
+        var name = manifest.GetProperty("name").GetString() ?? string.Empty;
+        const string prefix = "__MSG_";
+        const string suffix = "__";
+        if (!name.StartsWith(prefix, StringComparison.Ordinal)
+            || !name.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            return name;
+        }
+
+        var messageKey = name[prefix.Length..^suffix.Length];
+        var locale = manifest.TryGetProperty("default_locale", out var localeElement)
+            ? localeElement.GetString() ?? string.Empty
+            : string.Empty;
+        if (string.IsNullOrWhiteSpace(messageKey)
+            || string.IsNullOrWhiteSpace(locale)
+            || locale.Any(character => !char.IsAsciiLetterOrDigit(character) && character is not '_' and not '-'))
+        {
+            throw new InvalidDataException("扩展包的本地化名称配置无效。");
+        }
+
+        var messagesPath = $"_locales/{locale}/messages.json";
+        var messagesEntry = archive.Entries.SingleOrDefault(
+            entry => string.Equals(NormalizeEntryName(entry.FullName), messagesPath, StringComparison.OrdinalIgnoreCase));
+        if (messagesEntry is null)
+        {
+            throw new InvalidDataException($"扩展包缺少默认语言文件：{messagesPath}。");
+        }
+
+        using var stream = messagesEntry.Open();
+        using var document = JsonDocument.Parse(stream);
+        if (!document.RootElement.TryGetProperty(messageKey, out var message)
+            || !message.TryGetProperty("message", out var text))
+        {
+            throw new InvalidDataException("扩展包的本地化名称条目无效。");
+        }
+
+        return text.GetString() ?? string.Empty;
     }
 
     public static void ExtractVerified(string zipPath, string destinationDirectory)

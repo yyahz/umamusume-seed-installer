@@ -158,7 +158,7 @@ public sealed class GitHubReleaseClient
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.13"));
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("UmaSeedInstaller", "0.1.14"));
         }
     }
 
@@ -353,7 +353,7 @@ public static class ExtensionPackage
 
         var root = Json.AsObject(new JavaScriptSerializer().DeserializeObject(json), "manifest.json");
         var manifestVersion = Json.Int(root, "manifest_version");
-        var name = Json.String(root, "name");
+        var name = ResolveManifestName(archive, root);
         var versionText = Json.String(root, "version");
         if (manifestVersion != 3)
         {
@@ -371,6 +371,56 @@ public static class ExtensionPackage
         }
 
         return new ExtensionManifest(manifestVersion, name, version);
+    }
+
+    private static string ResolveManifestName(ZipArchive archive, Dictionary<string, object> manifest)
+    {
+        var name = Json.String(manifest, "name");
+        const string prefix = "__MSG_";
+        const string suffix = "__";
+        if (!name.StartsWith(prefix, StringComparison.Ordinal)
+            || !name.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            return name;
+        }
+
+        var messageKey = name.Substring(prefix.Length, name.Length - prefix.Length - suffix.Length);
+        var locale = Json.String(manifest, "default_locale");
+        if (string.IsNullOrWhiteSpace(messageKey)
+            || string.IsNullOrWhiteSpace(locale)
+            || locale.Any(character => !IsAsciiLetterOrDigit(character) && character != '_' && character != '-'))
+        {
+            throw new InvalidDataException("扩展包的本地化名称配置无效。");
+        }
+
+        var messagesPath = "_locales/" + locale + "/messages.json";
+        var messagesEntry = archive.Entries.SingleOrDefault(
+            entry => string.Equals(Normalize(entry.FullName), messagesPath, StringComparison.OrdinalIgnoreCase));
+        if (messagesEntry is null)
+        {
+            throw new InvalidDataException("扩展包缺少默认语言文件：" + messagesPath + "。");
+        }
+
+        string json;
+        using (var reader = new StreamReader(messagesEntry.Open(), Encoding.UTF8))
+        {
+            json = reader.ReadToEnd();
+        }
+
+        var messages = Json.AsObject(new JavaScriptSerializer().DeserializeObject(json), messagesPath);
+        if (!messages.TryGetValue(messageKey, out var value))
+        {
+            throw new InvalidDataException("扩展包的本地化名称条目无效。");
+        }
+
+        return Json.String(Json.AsObject(value, messageKey), "message");
+    }
+
+    private static bool IsAsciiLetterOrDigit(char character)
+    {
+        return character >= 'a' && character <= 'z'
+            || character >= 'A' && character <= 'Z'
+            || character >= '0' && character <= '9';
     }
 
     public static void ExtractVerified(string zipPath, string destinationDirectory)

@@ -11,6 +11,8 @@ var tests = new (string Name, Action Run)[]
     ("360 安全浏览器管理页地址", TestSafe360ManagementUrl),
     ("GitHub 最新版请求禁用缓存", TestLatestRequestDisablesCaching),
     ("合法扩展包检查与安装", TestValidPackageAndInstall),
+    ("接受本地化扩展名称", TestLocalizedPackageName),
+    ("拒绝伪造的本地化扩展名称", TestSpoofedLocalizedPackageName),
     ("更新保留备份", TestUpgradeKeepsBackup),
     ("旧安装目录完整迁移", TestLegacyDirectoryMigration),
     ("拒绝 ZIP 路径穿越", TestZipTraversalRejected),
@@ -122,6 +124,41 @@ static void TestValidPackageAndInstall()
         var result = new ExtensionInstaller(layout).Install(zip, new Version(1, 2, 3));
         AssertEqual(new Version(1, 2, 3), result.InstalledVersion);
         Assert(File.Exists(Path.Combine(layout.ExtensionDirectory, "main.js")));
+    });
+}
+
+static void TestLocalizedPackageName()
+{
+    WithTemporaryDirectory(root =>
+    {
+        var zip = Path.Combine(root, "localized.zip");
+        using (var archive = ZipFile.Open(zip, ZipArchiveMode.Create))
+        {
+            WriteEntry(archive, "manifest.json",
+                "{\"manifest_version\":3,\"name\":\"__MSG_extensionName__\",\"default_locale\":\"zh_CN\",\"version\":\"1.2.3\"}");
+            WriteEntry(archive, "_locales/zh_CN/messages.json",
+                "{\"extensionName\":{\"message\":\"闪耀优俊少女 · 种马搜索器\"}}");
+        }
+
+        var manifest = ExtensionPackage.Inspect(zip, new Version(1, 2, 3));
+        AssertEqual("闪耀优俊少女 · 种马搜索器", manifest.Name);
+    });
+}
+
+static void TestSpoofedLocalizedPackageName()
+{
+    WithTemporaryDirectory(root =>
+    {
+        var zip = Path.Combine(root, "spoofed.zip");
+        using (var archive = ZipFile.Open(zip, ZipArchiveMode.Create))
+        {
+            WriteEntry(archive, "manifest.json",
+                "{\"manifest_version\":3,\"name\":\"__MSG_extensionName__\",\"default_locale\":\"zh_CN\",\"version\":\"1.2.3\"}");
+            WriteEntry(archive, "_locales/zh_CN/messages.json",
+                "{\"extensionName\":{\"message\":\"其他扩展\"}}");
+        }
+
+        AssertThrows<InvalidDataException>(() => ExtensionPackage.Inspect(zip, new Version(1, 2, 3)));
     });
 }
 
